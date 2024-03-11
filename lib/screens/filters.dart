@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals_app/providers/filters_provider.dart';
 
-enum Filter { glutenFree, lactoseFree, vegetarian, vegan }
+class FiltersScreen extends ConsumerStatefulWidget {
+  const FiltersScreen({super.key});
 
-class FiltersScreen extends StatefulWidget {
-  const FiltersScreen({super.key, required this.currentFilters});
-
-  final Map<Filter, bool> currentFilters;
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<FiltersScreen> createState() {
     return _FilterScreenState();
   }
 }
 
-class _FilterScreenState extends State<FiltersScreen> {
+class _FilterScreenState extends ConsumerState<FiltersScreen> {
   var _glutenFreeFilterSet = false;
   var _lactoseFreeFilterSet = false;
   var _vegetarianFilterSet = false;
@@ -21,10 +20,12 @@ class _FilterScreenState extends State<FiltersScreen> {
   @override
   void initState() {
     super.initState();
-    _glutenFreeFilterSet = widget.currentFilters[Filter.glutenFree]!;
-    _lactoseFreeFilterSet = widget.currentFilters[Filter.lactoseFree]!;
-    _vegetarianFilterSet = widget.currentFilters[Filter.vegetarian]!;
-    _veganFilterSet = widget.currentFilters[Filter.vegan]!;
+    final activeFilters = ref.read(filtersProvider);
+
+    _glutenFreeFilterSet = activeFilters[Filter.glutenFree]!;
+    _lactoseFreeFilterSet = activeFilters[Filter.lactoseFree]!;
+    _vegetarianFilterSet = activeFilters[Filter.vegetarian]!;
+    _veganFilterSet = activeFilters[Filter.vegan]!;
   }
 
   @override
@@ -51,13 +52,14 @@ class _FilterScreenState extends State<FiltersScreen> {
         onPopInvoked: (didPop) async {
           if (didPop) return;
 
-          Navigator.of(context).pop({
+          ref.read(filtersProvider.notifier).setFilters({
             Filter.glutenFree: _glutenFreeFilterSet,
             Filter.lactoseFree: _lactoseFreeFilterSet,
             Filter.vegetarian: _vegetarianFilterSet,
             Filter.vegan: _veganFilterSet,
           });
 
+          Navigator.of(context).pop();
           return;
         },
         child: Column(
